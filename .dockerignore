@@ -1,0 +1,10 @@
+.dockerignore
+.DS_Store
+.env*
+.git
+.gitignore
+.idea
+data/weather_refresh_token
+docker-compose*.yml
+Dockerfile
+node_modules

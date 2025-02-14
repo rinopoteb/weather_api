@@ -5,6 +5,15 @@ const cors = require("cors");
 const fs = require("node:fs");
 const path = require("node:path");
 
+const tokenFileFolderPath = path.join(__dirname, "data");
+const tokenFilePath = path.join(__dirname, "data", "weather_refresh_token");
+if (!fs.existsSync(tokenFileFolderPath)) {
+  fs.mkdirSync(tokenFileFolderPath);
+}
+if (!fs.existsSync(tokenFilePath)) {
+  fs.writeFileSync(tokenFilePath, "");
+}
+
 const app = express();
 const port = 4485;
 const corsOptions = {
@@ -22,9 +31,16 @@ app.use((req, res, next) => {
 });
 app.use(express.json());
 
+function tomorrowIoErrorHandler(err) {
+  if (err.status === 401) {
+    return { data: "Tomorrow.io - Not authorized" };
+  }
+  return { data: "Tomorrow.io - Unknown error" };
+}
+
 app.get("/", async (request, response) => {
   try {
-    const weather_refresh_token = path.join(__dirname, "data", "weather_refresh_token");
+    const weather_refresh_token = tokenFilePath;
 
     if (request.query["refresh_token"]) {
       fs.writeFileSync(weather_refresh_token, request.query["refresh_token"]);
@@ -48,36 +64,52 @@ app.get("/", async (request, response) => {
     } else if (!refreshToken) {
       netatmo = "NOT AUTHENTICATED - Refer to README.md file to authenticate yourself on the Netatmo API";
     } else {
-      const { data: netatmoAuthResponse } = await axios.post(
-        "https://api.netatmo.com/oauth2/token",
-        `grant_type=refresh_token&refresh_token=${refreshToken}&client_id=${NETATMO_CLIENT_ID}&client_secret=${NETATMO_CLIENT_SECRET}`
-      );
+      const { data: netatmoAuthResponse } = await axios
+        .post(
+          "https://api.netatmo.com/oauth2/token",
+          `grant_type=refresh_token&refresh_token=${refreshToken}&client_id=${NETATMO_CLIENT_ID}&client_secret=${NETATMO_CLIENT_SECRET}`
+        )
+        .catch(err => {
+          netatmo =
+            "Error during Netatmo API authentication request - Try calling this page with a valid refresh token: '/?refresh_token=Netatmo API refresh token'";
+          return { netatmoAuthResponse: "" };
+        });
 
-      const { access_token: netatmoAccessToken, refresh_token: netatmoRefreshToken } = netatmoAuthResponse;
+      if (netatmoAuthResponse && netatmoAuthResponse.access_token) {
+        const { access_token: netatmoAccessToken, refresh_token: netatmoRefreshToken } = netatmoAuthResponse;
 
-      fs.writeFileSync(weather_refresh_token, netatmoRefreshToken);
+        fs.writeFileSync(weather_refresh_token, netatmoRefreshToken);
 
-      const { data: netatmoDataResponse } = await axios.get(
-        `https://api.netatmo.com/api/getstationsdata?access_token=${netatmoAccessToken}`
-      );
+        const { data: netatmoDataResponse } = await axios
+          .get(`https://api.netatmo.com/api/getstationsdata?access_token=${netatmoAccessToken}`)
+          .catch(err => {
+            netatmo = "Error during Netatmo API data request";
+            return { netatmoDataResponse: "" };
+          });
 
-      netatmo = netatmoDataResponse.body.devices;
+        netatmo = netatmoDataResponse.body.devices;
+      }
     }
 
     const location = encodeURIComponent(TOMORROW_IO_LOCATION);
 
-    const { data: forecast } = await axios.get(
-      `https://api.tomorrow.io/v4/weather/forecast?location=${location}&timesteps=1d&units=${TOMORROW_IO_UNIT}&apikey=${TOMORROW_IO_API_KEY}`
-    );
-    const { data: weather } = await axios.get(
-      `https://api.tomorrow.io/v4/weather/realtime?location=${location}&units=${TOMORROW_IO_UNIT}&apikey=${TOMORROW_IO_API_KEY}`
-    );
+    const { data: forecast } = await axios
+      .get(
+        `https://api.tomorrow.io/v4/weather/forecast?location=${location}&timesteps=1d&units=${TOMORROW_IO_UNIT}&apikey=${TOMORROW_IO_API_KEY}`
+      )
+      .catch(tomorrowIoErrorHandler);
+    const { data: weather } = await axios
+      .get(
+        `https://api.tomorrow.io/v4/weather/realtime?location=${location}&units=${TOMORROW_IO_UNIT}&apikey=${TOMORROW_IO_API_KEY}`
+      )
+      .catch(tomorrowIoErrorHandler);
 
     const data = { netatmo, weather, forecast, weatherCodes, weatherCodesFr };
 
     return response.send(data);
   } catch (e) {
     console.log(e);
+    return response.sendStatus(500);
   }
 });
 

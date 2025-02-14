@@ -1,0 +1,15 @@
+services:
+  weather_api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: weather_api
+    restart: unless-stopped
+    environment:
+      NETATMO_CLIENT_ID: ""
+      NETATMO_CLIENT_SECRET: ""
+      TOMORROW_IO_API_KEY: ""
+      TOMORROW_IO_LOCATION: ""
+      TOMORROW_IO_UNIT: metric
+    ports:
+      - "4485:4485"
