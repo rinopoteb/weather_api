@@ -93,18 +93,27 @@ app.get("/", async (request, response) => {
       }
     }
 
-    const location = encodeURIComponent(TOMORROW_IO_LOCATION);
+    const notConfiguredMessage = "NOT CONFIGURED - Refer to README.md file to configure the Tomorrow.io API";
+    let weather = notConfiguredMessage,
+      forecast = notConfiguredMessage;
 
-    const { data: forecast } = await axios
-      .get(
-        `https://api.tomorrow.io/v4/weather/forecast?location=${location}&timesteps=1d&units=${TOMORROW_IO_UNIT}&apikey=${TOMORROW_IO_API_KEY}`
-      )
-      .catch(tomorrowIoErrorHandler);
-    const { data: weather } = await axios
-      .get(
-        `https://api.tomorrow.io/v4/weather/realtime?location=${location}&units=${TOMORROW_IO_UNIT}&apikey=${TOMORROW_IO_API_KEY}`
-      )
-      .catch(tomorrowIoErrorHandler);
+    if (TOMORROW_IO_API_KEY && TOMORROW_IO_LOCATION) {
+      const location = encodeURIComponent(TOMORROW_IO_LOCATION);
+      const unit = TOMORROW_IO_UNIT ? TOMORROW_IO_UNIT : "metric";
+
+      const { data: forecastData } = await axios
+        .get(
+          `https://api.tomorrow.io/v4/weather/forecast?location=${location}&timesteps=1d&units=${unit}&apikey=${TOMORROW_IO_API_KEY}`
+        )
+        .catch(tomorrowIoErrorHandler);
+      const { data: weatherData } = await axios
+        .get(
+          `https://api.tomorrow.io/v4/weather/realtime?location=${location}&units=${unit}&apikey=${TOMORROW_IO_API_KEY}`
+        )
+        .catch(tomorrowIoErrorHandler);
+      weather = weatherData;
+      forecast = forecastData;
+    }
 
     const weatherCodes = { en, fr };
 

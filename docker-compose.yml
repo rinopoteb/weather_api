@@ -1,8 +1,6 @@
 services:
   weather_api:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    image: simonjodet/weather_api:latest
     container_name: weather_api
     restart: unless-stopped
     environment:
