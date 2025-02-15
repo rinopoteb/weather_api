@@ -1,4 +1,4 @@
-name: Docker Image CI
+name: Docker Image CI for develop branch
 
 on:
   push:
@@ -14,8 +14,8 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v4
     - name: Build docker image
-      run: docker build . --file Dockerfile --tag simonjodet/api_weather:${{ github.sha }} --tag simonjodet/api_weather:develop
+      run: docker build . --file Dockerfile --tag simonjodet/weather_api:${{ github.sha }} --tag simonjodet/weather_api:develop
     - name: Publish docker image to docker hub
       run: |
-        docker login -u simonjodet -p ${{ secrets. DOCKER_HUB_TOKEN }}
-        docker push simonjodet/api_weather --all-tags
+        docker login -u simonjodet -p ${{ secrets.DOCKER_HUB_TOKEN }}
+        docker push simonjodet/weather_api --all-tags
