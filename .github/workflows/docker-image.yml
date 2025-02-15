@@ -19,3 +19,6 @@ jobs:
       run: |
         docker login -u simonjodet -p ${{ secrets.DOCKER_HUB_TOKEN }}
         docker push simonjodet/weather_api --all-tags
+    - name: Trigger deploy
+      run: |
+        curl -H "Authorization: Bearer ${{ secrets.DEPLOY_TOKEN }}" ${{ secrets.DEPLOY_URL }}
