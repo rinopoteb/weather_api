@@ -175,7 +175,7 @@ And this Markup source code:
 </div>
 ```
 
-## Licence
+## License
 
 MIT
 
