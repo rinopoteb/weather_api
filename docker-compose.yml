@@ -11,5 +11,6 @@ services:
       TOMORROW_IO_API_KEY: ""
       TOMORROW_IO_LOCATION: ""
       TOMORROW_IO_UNIT: metric
+      AUTHENTICATION_TOKEN: ""
     ports:
       - "4485:4485"

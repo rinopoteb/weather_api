@@ -34,6 +34,13 @@ function tomorrowIoErrorHandler(err) {
 }
 
 app.get("/", async (request, response) => {
+  if (
+    process.env.AUTHENTICATION_TOKEN &&
+    request.headers.authorization !== `Bearer ${process.env.AUTHENTICATION_TOKEN}`
+  ) {
+    return response.sendStatus(401);
+  }
+
   try {
     const weather_refresh_token = tokenFilePath;
 
