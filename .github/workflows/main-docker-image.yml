@@ -1,0 +1,19 @@
+name: Docker Image CI for develop branch
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  build_and_publish:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+    - name: Build docker image
+      run: docker build . --file Dockerfile --tag simonjodet/weather_api:${{ github.ref }} --tag simonjodet/weather_api:latest
+    - name: Publish docker image to docker hub
+      run: |
+        docker login -u simonjodet -p ${{ secrets.DOCKER_HUB_TOKEN }}
+        docker push simonjodet/weather_api --all-tags

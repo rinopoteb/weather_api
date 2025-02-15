@@ -71,7 +71,7 @@ app.get("/", async (request, response) => {
           "https://api.netatmo.com/oauth2/token",
           `grant_type=refresh_token&refresh_token=${refreshToken}&client_id=${NETATMO_CLIENT_ID}&client_secret=${NETATMO_CLIENT_SECRET}`
         )
-        .catch(err => {
+        .catch(() => {
           netatmo =
             "Error during Netatmo API authentication request - Try calling this page with a valid refresh token: '/?refresh_token=Netatmo API refresh token'";
           return { netatmoAuthResponse: "" };
@@ -84,7 +84,7 @@ app.get("/", async (request, response) => {
 
         const { data: netatmoDataResponse } = await axios
           .get(`https://api.netatmo.com/api/getstationsdata?access_token=${netatmoAccessToken}`)
-          .catch(err => {
+          .catch(() => {
             netatmo = "Error during Netatmo API data request";
             return { netatmoDataResponse: "" };
           });
@@ -137,6 +137,7 @@ app.get("/icon/:code", async (request, response) => {
     return response.sendFile(path.join(__dirname, "weather_icons", weatherIcons[request.params.code]));
   } catch (e) {
     console.log(e);
+    return response.sendStatus(500);
   }
 });
 
