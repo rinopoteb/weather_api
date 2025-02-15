@@ -12,7 +12,7 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v4
     - name: Build docker image
-      run: docker build . --file Dockerfile --tag simonjodet/weather_api:${{ github.ref }} --tag simonjodet/weather_api:latest
+      run: docker build . --file Dockerfile --tag simonjodet/weather_api:${{ github.ref_name }} --tag simonjodet/weather_api:latest
     - name: Publish docker image to docker hub
       run: |
         docker login -u simonjodet -p ${{ secrets.DOCKER_HUB_TOKEN }}
