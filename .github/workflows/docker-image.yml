@@ -1,16 +1,22 @@
 name: Docker Image CI
 
 on:
-  push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
+#  push:
+#    branches: [ "main" ]
+#  pull_request:
+#    branches: [ "main" ]
+  [workflow_dispatch]
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
-    - name: Build the Docker image
-      run: docker build . --file Dockerfile --tag simonjodet/api_weather:${{github.sha}}
+    - name: Checkout
+      uses: actions/checkout@v4
+    - name: Build docker image
+      run: docker build . --file Dockerfile --tag simonjodet/api_weather:${{ github.sha }}
+    - name: Publish docker image to docker hub
+      run: |
+        docker login -u simonjodet -p ${{ secrets. DOCKER_HUB_TOKEN }}
+        docker push simonjodet/api_weather:${{ github.sha }}
