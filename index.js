@@ -5,7 +5,7 @@ const cors = require("cors");
 const fs = require("node:fs");
 const path = require("node:path");
 const { requestLogger } = require("./src/request_logger");
-const { en, fr, icons: weatherIcons } = require("./src/dicts");
+const { en, fr, de, icons: weatherIcons } = require("./src/dicts");
 
 const tokenFileFolderPath = path.join(__dirname, "data");
 const tokenFilePath = path.join(__dirname, "data", "weather_refresh_token");
@@ -115,7 +115,7 @@ app.get("/", async (request, response) => {
       forecast = forecastData;
     }
 
-    const weatherCodes = { en, fr };
+    const weatherCodes = { en, fr, de };
 
     const data = { netatmo, weather, forecast, weatherCodes };
 
