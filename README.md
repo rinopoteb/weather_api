@@ -11,7 +11,7 @@ weather_api is lightweight Express JS API aggregating Netatmo weather stations d
 It can be used to get Netatmo data, Tomorrow.io data or both, depending on the environment variables you set.
 
 It provides an endpoint to deliver icons based on weather codes.  
-It also provides weather code labels in english and french.
+It also provides weather code labels in english, french and german.
 
 ### Response example
 
