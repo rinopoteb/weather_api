@@ -36,12 +36,8 @@ In order for weather_api to retrieve data from your Netatmo weather station, you
 - Create a new app, give it a name, a description, data protection officer name and email  
   ![Netatmo create app](doc/images/netatmo_create_app.png)
 - Go to the app page and you'll find the client ID and the client secret in the "App Technical Parameters" section
-- Just below, you'll find the "Token generator". Select "read_station" in the "Choose scopes" list and click on the "Generate Token" button.  
-  ![Netatmo create app](doc/images/netatmo_token_generator.png)
-- Click on the "Yes, I accept" button on the next page.
-- Copy the Refresh Token (and not the Access Token) and call weather_api with it: https://weatherapi.mydomain.com/?refresh_token=<refresh token>
-  ![Netatmo create app](doc/images/netatmo_refresh_token.png)
-- You should be redirected to https://weatherapi.mydomain.com/ and get your weather station data in the netatmo property of the JSON response.
+- Call weather_api with it: https://weatherapi.mydomain.com/?authorize
+- Follow the authorization steps
 - weather_api will store the refresh token in its `/app/data` folder.
 
 #### Configuration

@@ -1,6 +1,7 @@
 const express = require("express");
 const axios = require("axios");
 const cors = require("cors");
+const querystring = require("querystring");
 
 const fs = require("node:fs");
 const path = require("node:path");
@@ -22,6 +23,8 @@ const corsOptions = {
   origin: "*",
   optionsSuccessStatus: 200 // some legacy browsers (IE11, various SmartTVs) choke on 204
 };
+const state = Math.random().toString(36).substring(2, 15);
+
 app.use(cors(corsOptions));
 app.use(requestLogger);
 app.use(express.json());
@@ -124,6 +127,59 @@ app.get("/", async (request, response) => {
     console.log(e);
     return response.sendStatus(500);
   }
+});
+
+app.get("/authorize", async (request, response) => {
+  const {
+    NETATMO_CLIENT_ID
+  } = process.env;
+  if (!NETATMO_CLIENT_ID) {
+    return response.status(500).send("NETATMO_CLIENT_ID is not set in environment variables.");
+  }
+  const baseUrl = `${request.protocol}://${request.hostname}:${port}`
+  response.redirect(`https://api.netatmo.com/oauth2/authorize?client_id=${NETATMO_CLIENT_ID}&redirect_uri=${baseUrl}/store-token&state=${state}&scope=read_station`);
+});
+
+app.get("/store-token", async (request, response) => {
+  const {
+    NETATMO_CLIENT_ID,
+    NETATMO_CLIENT_SECRET
+  } = process.env;
+  if (!NETATMO_CLIENT_ID || !NETATMO_CLIENT_SECRET) {
+    return response.status(500).send("NETATMO_CLIENT_ID or NETATMO_CLIENT_SECRET is not set in environment variables.");
+  }
+
+  const queryParams = request.query;
+  const currentState = queryParams.state;
+  const code = queryParams.code;
+  if (!currentState || !code) {
+    return response.status(400).send("Missing state or code in query parameters.");
+  }
+  if (currentState !== state) {
+    return response.status(403).send("Invalid state parameter.");
+  }
+
+  const baseUrl = `${request.protocol}://${request.hostname}:${port}`
+  const payload = querystring.stringify({
+    grant_type: "authorization_code",
+    client_id: NETATMO_CLIENT_ID,
+    client_secret: NETATMO_CLIENT_SECRET,
+    code: code,
+    redirect_uri: `${baseUrl}/store-token`,
+    scope: "read_station"
+  });
+
+  const tokenResponse = await axios.post(
+    "https://api.netatmo.com/oauth2/token",
+    payload,
+    {
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8"
+      }
+    }
+  );
+  const refreshToken = tokenResponse.data.refresh_token;
+  response.redirect(`/?refresh_token=${refreshToken}`);
 });
 
 app.get("/icon/:code", async (request, response) => {
