@@ -131,22 +131,23 @@ app.get("/", async (request, response) => {
 
 app.get("/authorize", async (request, response) => {
   const {
+    BASE_URL,
     NETATMO_CLIENT_ID
   } = process.env;
-  if (!NETATMO_CLIENT_ID) {
-    return response.status(500).send("NETATMO_CLIENT_ID is not set in environment variables.");
+  if (!BASE_URL || !NETATMO_CLIENT_ID) {
+    return response.status(500).send("BASE_URL or NETATMO_CLIENT_ID is not set in environment variables.");
   }
-  const baseUrl = `${request.protocol}://${request.hostname}:${port}`
-  response.redirect(`https://api.netatmo.com/oauth2/authorize?client_id=${NETATMO_CLIENT_ID}&redirect_uri=${baseUrl}/store-token&state=${state}&scope=read_station`);
+  response.redirect(`https://api.netatmo.com/oauth2/authorize?client_id=${NETATMO_CLIENT_ID}&redirect_uri=${BASE_URL}/store-token&state=${state}&scope=read_station`);
 });
 
 app.get("/store-token", async (request, response) => {
   const {
+    BASE_URL,
     NETATMO_CLIENT_ID,
     NETATMO_CLIENT_SECRET
   } = process.env;
   if (!NETATMO_CLIENT_ID || !NETATMO_CLIENT_SECRET) {
-    return response.status(500).send("NETATMO_CLIENT_ID or NETATMO_CLIENT_SECRET is not set in environment variables.");
+    return response.status(500).send("BASE_URL, NETATMO_CLIENT_ID or NETATMO_CLIENT_SECRET is not set in environment variables.");
   }
 
   const queryParams = request.query;
@@ -159,13 +160,12 @@ app.get("/store-token", async (request, response) => {
     return response.status(403).send("Invalid state parameter.");
   }
 
-  const baseUrl = `${request.protocol}://${request.hostname}:${port}`
   const payload = querystring.stringify({
     grant_type: "authorization_code",
     client_id: NETATMO_CLIENT_ID,
     client_secret: NETATMO_CLIENT_SECRET,
     code: code,
-    redirect_uri: `${baseUrl}/store-token`,
+    redirect_uri: `${BASE_URL}/store-token`,
     scope: "read_station"
   });
 

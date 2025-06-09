@@ -25,6 +25,10 @@ Please follow the Configuration section of this documentation to set up the requ
 
 ## Configuration
 
+### Base Url
+
+Setup the environment variable `BASE_URL` to the URL where you want to access the API.
+
 ### Netatmo API documentation
 
 #### Authentication
